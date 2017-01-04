@@ -22,14 +22,23 @@ char messege[1024];
 
 int main( int argc, char** argv )
 {
+	bool imHosting = true;
+
 	SDLNet_Init();
 
 	IPaddress me, they;
 	TCPsocket server, client, sock;
+
 	Uint16 port = 2314;
-	SDLNet_ResolveHost( &me, NULL, port );
-	SDLNet_ResolveHost( &they, "192.168.0.101", port );
-	server = SDLNet_TCP_Open( &me );
+
+	if( imHosting )
+	{
+		SDLNet_ResolveHost( &me, NULL, port );
+		server = SDLNet_TCP_Open( &me );
+	}
+	else
+		SDLNet_ResolveHost( &they, "192.168.0.101", port );
+
 	
 	bool doneWritingMessege = false;
 	char myMessege[1024];
@@ -40,29 +49,36 @@ int main( int argc, char** argv )
 
 	while( true )
 	{
-		client = SDLNet_TCP_Accept( server );
-		sock = SDLNet_TCP_Open( &they );
-		if( client )
+		if( imHosting )
 		{
-			SDLNet_TCP_Recv(client, messege, 1024);
-			std::cout<<messege<<std::endl;
-		}else
-			std::cout<<"Did not recieve"<<std::endl;
-		if( sock )
-		{
-			if( doneWritingMessege )
+			client = SDLNet_TCP_Accept( server );
+			char messege[1024];
+			if( client )
 			{
-				t1.join();
-				doneWritingMessege = false;
-				t1 = std::thread( input, myMessege, &len, &doneWritingMessege ); 
-				SDLNet_TCP_Send( sock, myMessege, len );
-			}
-		}else
-			std::cout<<"Did not send"<<std::endl;
+				SDLNet_TCP_Recv( client, messege, 1024 );
+				std::cout<<messege<<std::endl;
+			}else
+				std::cout<<"Did not recieve"<<std::endl;
+		}
+		else
+		{
+				sock = SDLNet_TCP_Open( &they );
+			if( sock )
+			{
+				if( doneWritingMessege )
+				{
+					t1.join();
+					doneWritingMessege = false;
+					t1 = std::thread( input, myMessege, &len, &doneWritingMessege ); 
+					SDLNet_TCP_Send( sock, myMessege, len );
+				}
+			}else
+				std::cout<<"Did not send"<<std::endl;
+		}
 
 
 		std::cout<<"Working"<<std::endl;
-		SDL_Delay(4000);
+		SDL_Delay(100);
 	}
 	/*
 
