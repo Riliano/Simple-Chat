@@ -13,7 +13,7 @@ void input( char *messege, int *size, bool *done )
 	{
 		*(messege+i) = temp[i];
 	}
-	*size = i;
+	*size = i+1;
 	*(messege+i) = '\0';
 	*done = true;
 }
@@ -22,79 +22,45 @@ char messege[1024];
 
 int main( int argc, char** argv )
 {
-	bool imHosting = true;
+
+	bool doneWriting = false;
+	int len;
+	std::thread writing( input, messege, &len, &doneWriting );
 
 	SDLNet_Init();
 
-	IPaddress me, they;
-	TCPsocket server, client, sock;
+	TCPsocket client, server, local;
+	IPaddress me, them;
+	char target[16];
+	std::cin>>target;
+	Uint16 port = 1234;
 
-	Uint16 port = 2314;
+	SDLNet_ResolveHost( &me, NULL, port );
+	SDLNet_ResolveHost( &them, target, port );
 
-	if( imHosting )
-	{
-		SDLNet_ResolveHost( &me, NULL, port );
-		server = SDLNet_TCP_Open( &me );
-	}
-	else
-		SDLNet_ResolveHost( &they, "192.168.0.101", port );
-
-	
-	bool doneWritingMessege = false;
-	char myMessege[1024];
-	int len;
-	std::thread t1( input, messege, &len, &doneWritingMessege );
-
-	std::cout<<SDLNet_GetError()<<std::endl;
+	server = SDLNet_TCP_Open( &me );
 
 	while( true )
 	{
-		if( imHosting )
+		client = SDLNet_TCP_Accept( server );
+		if( client )
 		{
-			client = SDLNet_TCP_Accept( server );
-			char messege[1024];
-			if( client )
+			char msg[1024];
+			SDLNet_TCP_Recv( client, msg, 1024 );
+			std::cout<<msg<<std::endl;
+		}
+
+		if( doneWriting )
+		{
+			local = SDLNet_TCP_Open( &them );
+			if( local )
 			{
-				SDLNet_TCP_Recv( client, messege, 1024 );
-				std::cout<<messege<<std::endl;
-			}else
-				std::cout<<"Did not recieve"<<std::endl;
+				writing.join();
+				SDLNet_TCP_Send( local, messege, len );
+				doneWriting = false;
+				writing = std::thread( input, messege, &len, &doneWriting );
+			}
 		}
-		else
-		{
-				sock = SDLNet_TCP_Open( &they );
-			if( sock )
-			{
-				if( doneWritingMessege )
-				{
-					t1.join();
-					doneWritingMessege = false;
-					t1 = std::thread( input, myMessege, &len, &doneWritingMessege ); 
-					SDLNet_TCP_Send( sock, myMessege, len );
-				}
-			}else
-				std::cout<<"Did not send"<<std::endl;
-		}
-
-
-		std::cout<<"Working"<<std::endl;
-		SDL_Delay(100);
 	}
-	/*
 
-	char messege[1024];
-
-		while( true )
-	{
-		if( done )
-		{
-			std::cout<<messege<<std::endl;
-			t1.join();
-			done = false;
-			t1 = std::thread( input, messege, &done );
-		}
-		else
-			std::cout<<"No messege yet"<<std::endl;
-	}
-	*/
 }
