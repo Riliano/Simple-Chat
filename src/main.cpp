@@ -39,7 +39,6 @@ int main( int argc, char** argv )
 	SDLNet_ResolveHost( &them, target, port );
 
 	server = SDLNet_TCP_Open( &me );
-	std::cout<<me.host<<" "<<them.host<<std::endl;
 
 	while( true )
 	{
@@ -62,6 +61,7 @@ int main( int argc, char** argv )
 				writing = std::thread( input, messege, &len, &doneWriting );
 			}
 		}
+		SDL_Delay( 200 );
 	}
 
 }
