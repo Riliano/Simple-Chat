@@ -55,11 +55,12 @@ int main( int argc, char** argv )
 			local = SDLNet_TCP_Open( &them );
 			if( local )
 			{
-				writing.join();
 				SDLNet_TCP_Send( local, messege, len );
-				doneWriting = false;
-				writing = std::thread( input, messege, &len, &doneWriting );
-			}
+			}else
+				std::cout<<"Messege failed to send"<<std::endl;
+			writing.join();
+			doneWriting = false;
+			writing = std::thread( input, messege, &len, &doneWriting );
 		}
 		SDL_Delay( 200 );
 	}
