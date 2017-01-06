@@ -43,6 +43,10 @@ int main()
 		std::cout<<"Connection successful\nEnter nickname: ";
 		std::cin>>name;
 		SDLNet_TCP_Send( sock, name, 20 );
+	}else
+	{
+		std::cout<<"Connection failed"<<std::endl;
+		return 0;
 	}
 
 	char msg[200];
@@ -50,10 +54,11 @@ int main()
 	bool doneWriting = false;
 	std::thread t1( input, msg, &len, &doneWriting );
 
+	SDLNet_SocketSet chk = SDLNet_AllocSocketSet( 1 );
+	SDLNet_TCP_AddSocket( chk, sock );
+
 	while( true )
 	{
-		SDLNet_SocketSet chk = SDLNet_AllocSocketSet( 1 );
-		SDLNet_TCP_AddSocket( chk, sock );
 		int active = SDLNet_CheckSockets( chk, 0 );
 		if( active > 0 )
 		{
