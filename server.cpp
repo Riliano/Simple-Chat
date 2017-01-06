@@ -61,13 +61,32 @@ void AddClient( TCPsocket &sock )
 		activeClients[num_clients].name[i] = name[i];
 	activeClients[num_clients].name[i+1] = '\0';
 	num_clients++;
+	char msg[30] = "New user: ";
+	int msgLen;
+	for( msgLen=0;name[msgLen]!='\0';msgLen++ )
+		msg[msgLen+10] = name[msgLen];
+	msgLen+=11;
+	for( int i=0;i<num_clients;i++ )
+		SDLNet_TCP_Send( activeClients[i].socket, msg, msgLen );
+	std::cout<<msg<<std::endl;
 }
 void RemoveClient( int who )
 {
+	char msg[43] = "User has disconnected: ";
+	int msgLen;
+	for( msgLen=0;activeClients[who].name[msgLen]!='\0';msgLen++ )
+		msg[msgLen+23] = activeClients[who].name[msgLen];
+	msgLen+=24;
+
 	SDLNet_TCP_DelSocket( allSocks, activeClients[who].socket );
 	SDLNet_TCP_Close( activeClients[who].socket );
 	std::swap( activeClients[who], activeClients[num_clients-1] );
 	num_clients--;
+	
+	for( int i=0;i<num_clients;i++ )
+		SDLNet_TCP_Send( activeClients[i].socket, msg, msgLen );
+	std::cout<<msg<<std::endl;
+
 }
 
 int main( int argc, char** argv )
