@@ -16,9 +16,9 @@ struct client_t
 
 //std::vector<client_t> activeClients;
 client_t activeClients[200];
+SDLNet_SocketSet allSocks;
 int num_clients;
 
-/*
 void input( char *messege, int *size, bool *done )
 {
 	std::string temp;
@@ -32,7 +32,6 @@ void input( char *messege, int *size, bool *done )
 	*(messege+i) = '\0';
 	*done = true;
 }
-*/
 
 void AddClient( TCPsocket &sock )
 {
@@ -56,6 +55,7 @@ void AddClient( TCPsocket &sock )
 	}
 
 	activeClients[num_clients].socket = sock;
+	SDLNet_TCP_AddSocket( allSocks, activeClients[num_clients].socket );
 	int i;
 	for( i=0;name[i]!='\0';i++ )
 		activeClients[num_clients].name[i] = name[i];
@@ -64,6 +64,7 @@ void AddClient( TCPsocket &sock )
 }
 void RemoveClient( int who )
 {
+	SDLNet_TCP_DelSocket( allSocks, activeClients[who].socket );
 	SDLNet_TCP_Close( activeClients[who].socket );
 	std::swap( activeClients[who], activeClients[num_clients-1] );
 	num_clients--;
@@ -89,27 +90,22 @@ int main( int argc, char** argv )
 	std::cout<<"Enter Port: ";
 	std::cin>>port;
 //input stuff
-/*
 	char serverMessege[216] = "SERVER MESSEGE: ";
 	int serverMessegeLen;
 	bool doneWriting = false;
 	std::thread writing( input, serverMessege+16, &serverMessegeLen,  &doneWriting );
-	*/
 //start server
 	SDLNet_ResolveHost( &ip, NULL, port );
 	server = SDLNet_TCP_Open( &ip );
+
+	allSocks = SDLNet_AllocSocketSet( 201 );
+	SDLNet_TCP_AddSocket( allSocks, server );
 
 	std::cout<<"Begin hosting on port: "<<port<<std::endl;
 
 	while( true )
 	{
 		//check for activity
-//		SDLNet_SocketSet allSocks = makeSocketSet();
-		SDLNet_SocketSet allSocks;
-		allSocks = SDLNet_AllocSocketSet( num_clients+1 );
-		SDLNet_TCP_AddSocket( allSocks, server );
-		for( int i=0;i<num_clients;i++ )
-			SDLNet_TCP_AddSocket( allSocks, activeClients[i].socket );
 		int activeSockets = SDLNet_CheckSockets( allSocks, 1 );
 		//check for new clients
 		if( SDLNet_SocketReady( server ) )
@@ -161,7 +157,6 @@ int main( int argc, char** argv )
 		}
 		*/
 		SDL_Delay( 200 );
-		SDLNet_FreeSocketSet( allSocks ); 
 	}
 
 }
