@@ -18,6 +18,7 @@ struct client_t
 client_t activeClients[200];
 int num_clients;
 
+/*
 void input( char *messege, int *size, bool *done )
 {
 	std::string temp;
@@ -31,6 +32,7 @@ void input( char *messege, int *size, bool *done )
 	*(messege+i) = '\0';
 	*done = true;
 }
+*/
 
 void AddClient( TCPsocket &sock )
 {
@@ -87,10 +89,12 @@ int main( int argc, char** argv )
 	std::cout<<"Enter Port: ";
 	std::cin>>port;
 //input stuff
+/*
 	char serverMessege[216] = "SERVER MESSEGE: ";
 	int serverMessegeLen;
 	bool doneWriting = false;
 	std::thread writing( input, serverMessege+16, &serverMessegeLen,  &doneWriting );
+	*/
 //start server
 	SDLNet_ResolveHost( &ip, NULL, port );
 	server = SDLNet_TCP_Open( &ip );
@@ -100,7 +104,12 @@ int main( int argc, char** argv )
 	while( true )
 	{
 		//check for activity
-		SDLNet_SocketSet allSocks = makeSocketSet();
+//		SDLNet_SocketSet allSocks = makeSocketSet();
+		SDLNet_SocketSet allSocks;
+		allSocks = SDLNet_AllocSocketSet( num_clients+1 );
+		SDLNet_TCP_AddSocket( allSocks, server );
+		for( int i=0;i<num_clients;i++ )
+			SDLNet_TCP_AddSocket( allSocks, activeClients[i].socket );
 		int activeSockets = SDLNet_CheckSockets( allSocks, 1 );
 		//check for new clients
 		if( SDLNet_SocketReady( server ) )
@@ -141,6 +150,7 @@ int main( int argc, char** argv )
 				}
 			}
 		}
+		/*
 		if( doneWriting )
 		{
 			writing.join();
@@ -149,7 +159,9 @@ int main( int argc, char** argv )
 			doneWriting = false;
 			writing = std::thread( input, serverMessege+16, &serverMessegeLen,  &doneWriting );
 		}
+		*/
 		SDL_Delay( 200 );
+		SDLNet_FreeSocketSet( allSocks ); 
 	}
 
 }
