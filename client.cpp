@@ -25,7 +25,7 @@ int main()
 	IPaddress ip;
 	TCPsocket sock;
 
-	char address[17];
+	char address[40];
 	Uint16 port;
 
 	std::cout<<"Enter address: ";
@@ -42,6 +42,8 @@ int main()
 	{
 		std::cout<<"Connection successful\nEnter nickname: ";
 		std::cin>>name;
+		std::string dump;
+		std::getline( std::cin, dump );		
 		SDLNet_TCP_Send( sock, name, 20 );
 	}else
 	{
