@@ -70,17 +70,6 @@ void RemoveClient( int who )
 	num_clients--;
 }
 
-SDLNet_SocketSet makeSocketSet()
-{
-	SDLNet_SocketSet set = SDLNet_AllocSocketSet( num_clients+1 );
-
-	SDLNet_TCP_AddSocket( set, server );
-	for( int i=0;i<num_clients;i++ )
-		SDLNet_TCP_AddSocket( set, activeClients[i].socket );
-
-	return set;
-}
-
 int main( int argc, char** argv )
 {
 	SDLNet_Init();
