@@ -154,7 +154,6 @@ int main( int argc, char** argv )
 				}
 			}
 		}
-		/*
 		if( doneWriting )
 		{
 			writing.join();
@@ -163,7 +162,6 @@ int main( int argc, char** argv )
 			doneWriting = false;
 			writing = std::thread( input, serverMessege+16, &serverMessegeLen,  &doneWriting );
 		}
-		*/
 		SDL_Delay( 200 );
 	}
 
